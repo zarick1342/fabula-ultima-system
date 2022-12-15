@@ -1,0 +1,177 @@
+<form class="{{cssClass}} {{actor.type}} flexcol" autocomplete="off">
+  {{!-- Sheet Header --}}
+  <header class="sheet-header">
+    <img
+      class="profile-img"
+      src="{{actor.img}}"
+      data-edit="img"
+      title="{{actor.name}}"
+      height="100"
+      width="100"
+    />
+    <div class="header-fields">
+      <h1 class="charname">
+        <input
+          name="name"
+          type="text"
+          value="{{actor.name}}"
+          placeholder="Name"
+        />
+      </h1>
+      {{!-- The grid classes are defined in scss/global/_grid.scss. To use, use
+      both the "grid" and "grid-Ncol" class where "N" can be any number from 1
+      to 12 and will create that number of columns. --}}
+      <div class="resources grid grid-3col">
+        {{!-- "flex-group-center" is also defined in the _grid.scss file and it
+        will add a small amount of padding, a border, and will center all of its
+        child elements content and text. --}}
+        <div class="resource flex-group-center">
+          <label for="system.resources.hp.value" class="resource-label"
+            >HP</label
+          >
+          <div class="resource-content flexrow flex-center flex-between">
+            <input
+              type="text"
+              name="system.resources.hp.value"
+              value="{{system.resources.hp.value}}"
+              data-dtype="Number"
+            />
+            <span> / </span>
+            <span>{{ system.resources.hp.max }}</span>
+          </div>
+        </div>
+
+        <div class="resource flex-group-center">
+          <label for="system.resources.mp.value" class="resource-label"
+            >MP</label
+          >
+          <div class="resource-content flexrow flex-center flex-between">
+            <input
+              type="text"
+              name="system.resources.mp.value"
+              value="{{system.resources.mp.value}}"
+              data-dtype="Number"
+            />
+            <span> / </span>
+            <span>{{ system.resources.mp.max }}</span>
+          </div>
+        </div>
+
+        <div class="resource flex-group-center">
+          <label for="system.level.value" class="resource-label">Level</label>
+          <div class="resource-content flexrow flex-center flex-between">
+            <input
+              type="text"
+              name="system.level.value"
+              value="{{system.level.value}}"
+              data-dtype="Number"
+            />
+          </div>
+        </div>
+
+        <div class="resource flex-group-center">
+          <label for="system.derived.def.value" class="resource-label"
+            >Def</label
+          >
+          <div class="resource-content flexrow flex-center flex-between">
+            <span>{{ system.derived.def.value }}</span>
+          </div>
+        </div>
+        <div class="resource flex-group-center">
+          <label for="system.derived.def.value" class="resource-label"
+            >MDef</label
+          >
+          <div class="resource-content flexrow flex-center flex-between">
+            <span>{{ system.derived.mdef.value }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  {{!-- Sheet Tab Navigation --}}
+  <nav class="sheet-tabs tabs" data-group="primary">
+    {{!-- Default tab is specified in actor-sheet.mjs --}}
+    <a class="item" data-tab="features">Features</a>
+    <a class="item" data-tab="skills">Classes/Skills</a>
+    <a class="item" data-tab="items">Items</a>
+    <a class="item" data-tab="spells">Spells</a>
+    <a class="item" data-tab="effects">Effects</a>
+  </nav>
+
+  {{!-- Sheet Body --}}
+  <section class="sheet-body">
+    {{!-- Owned Features Tab --}}
+    <div class="tab features" data-group="primary" data-tab="features">
+      <section class="grid grid-3col">
+        <aside class="sidebar">
+          {{!-- The grid classes are defined in scss/global/_grid.scss. To use,
+          use both the "grid" and "grid-Ncol" class where "N" can be any number
+          from 1 to 12 and will create that number of columns. --}}
+          <div class="abilities flexcol">
+            {{#each system.attributes as |attribute key|}}
+            <div class="ability flexrow flex-group-center">
+              <label
+                for="system.attributes.{{key}}.base"
+                class="resource-label flexlarge align-left"
+                data-label="{{attribute.label}}"
+                >{{attribute.label}}</label
+              >
+              <select
+                data-dtype="Number"
+                value="{{attribute.base}}"
+                name="system.attributes.{{key}}.base"
+              >
+                {{#select attribute.base}}
+                <option value="6">d6</option>
+                <option value="8">d8</option>
+                <option value="10">d10</option>
+                <option value="12">d12</option>
+                {{/select}}
+              </select>
+              <span class="ability-mod">{{ attribute.current }}</span>
+            </div>
+            {{/each}}
+          </div>
+        </aside>
+
+        {{!-- For the main features list, span the right two columns --}}
+        <section class="main grid-span-2">
+          {{#each system.status as |status key|}}
+          <label class="checkbox">
+            <span>{{ key }}</span
+            ><input
+              type="checkbox"
+              name="system.status.{{key}}.value"
+              {{
+              checked
+              status.value
+              }}
+            />
+          </label>
+          {{/each}}
+        </section>
+      </section>
+    </div>
+
+    {{!-- Skills Tab --}}
+    <div class="tab skills" data-group="primary" data-tab="skills">
+      {{> "systems/fabulaultima/templates/actor/parts/actor-features.html"}}
+    </div>
+
+    {{!-- Owned Items Tab --}}
+    <div class="tab items" data-group="primary" data-tab="items">
+      {{> "systems/fabulaultima/templates/actor/parts/actor-items.html"}}
+    </div>
+
+    {{!-- Owned Spells Tab --}}
+    <div class="tab spells" data-group="primary" data-tab="spells">
+      {{> "systems/fabulaultima/templates/actor/parts/actor-spells.html"}}
+    </div>
+
+    {{!-- Active Effects Tab --}}
+    <div class="tab effects flexcol" data-group="primary" data-tab="effects">
+      {{> "systems/fabulaultima/templates/actor/parts/actor-effects.html"}}
+    </div>
+  </section>
+</form>

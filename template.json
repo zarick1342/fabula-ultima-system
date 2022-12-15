@@ -1,0 +1,140 @@
+{
+  "Actor": {
+    "types": ["character", "npc"],
+    "templates": {
+      "base": {
+        "level": {
+          "value": 5
+        },
+        "resources": {
+          "hp": {
+            "value": 10,
+            "min": 0,
+            "max": 10
+          },
+          "mp": {
+            "value": 10,
+            "min": 0,
+            "max": 10
+          }
+        },
+        "attributes": {
+          "dex": {
+            "base": 6,
+            "current": 6
+          },
+          "ins": {
+            "base": 6,
+            "current": 6
+          },
+          "mig": {
+            "base": 6,
+            "current": 6
+          },
+          "wlp": {
+            "base": 6,
+            "current": 6
+          }
+        },
+        "derived": {
+          "crisis": { "value": 5 },
+          "init": { "value": 0 },
+          "def": { "value": 0 },
+          "mdef": { "value": 0 }
+        },
+        "status": {
+          "slow": { "value": false, "stats": ["dex"] },
+          "dazed": { "value": false, "stats": ["ins"] },
+          "weak": { "value": false, "stats": ["mig"] },
+          "shaken": { "value": false, "stats": ["wlp"] },
+          "enraged": { "value": false, "stats": ["dex", "ins"] },
+          "poisoned": { "value": false, "stats": ["mig", "wlp"] }
+        },
+        "castingAttributes": {
+          "primary": { "value": "ins" },
+          "secondary": { "value": "wlp" }
+        }
+      }
+    },
+    "character": {
+      "templates": ["base"],
+      "resources": {
+        "ip": {
+          "value": 6,
+          "min": 0,
+          "max": 6
+        }
+      }
+    },
+    "npc": {
+      "templates": ["base"]
+    }
+  },
+  "Item": {
+    "types": [
+      "weapon",
+      "shield",
+      "armor",
+      "accessory",
+      "class",
+      "skill",
+      "spell"
+    ],
+    "templates": {
+      "base": {
+        "description": ""
+      },
+      "item": {
+        "cost": { "value": 0 }
+      },
+      "equippable": {
+        "isMartial": { "value": false },
+        "quality": { "value": "" },
+        "isEquipped": { "value": false }
+      },
+      "defensive": {
+        "def": { "value": 0 },
+        "mdef": { "value": 0 },
+        "init": { "value": 0 }
+      },
+      "hasLevel": {
+        "level": { "value": 0, "max": 10, "min": 0 }
+      }
+    },
+    "weapon": {
+      "templates": ["base", "item", "equippable"],
+      "attributes": {
+        "primary": { "value": "mig" },
+        "secondary": { "value": "dex" }
+      },
+      "accuracy": { "value": 0 },
+      "damage": { "value": 6 },
+      "hands": { "value": 1 },
+      "type": { "value": "Melee" },
+      "damageType": { "value": "phys" }
+    },
+    "shield": {
+      "templates": ["base", "item", "equippable", "defensive"]
+    },
+    "armor": {
+      "templates": ["base", "item", "equippable", "defensive"]
+    },
+    "accessory": {
+      "templates": ["base", "item", "equippable", "defensive"]
+    },
+    "class": {
+      "templates": ["base", "hasLevel"],
+      "benefits": { "value": [] }
+    },
+    "skill": {
+      "templates": ["base", "hasLevel"]
+    },
+    "spell": {
+      "templates": ["base"],
+      "mpCost": { "value": "" },
+      "target": { "value": "" },
+      "duration": { "value": "" },
+      "isOffensive": { "value": false }
+    }
+  }
+}

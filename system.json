@@ -1,0 +1,36 @@
+{
+  "id": "fabulaultima",
+  "title": "Fabula Ultima",
+  "description": "The Fabula Ultima system for FoundryVTT!",
+  "version": "0.1.0",
+  "compatibility": {
+    "minimum": 10,
+    "verified": "10.287",
+    "maximum": 10
+  },
+  "authors": [
+    {
+      "name": "Zarick13"
+    }
+  ],
+  "esmodules": ["module/fabulaultima.mjs"],
+  "styles": ["css/fabulaultima.css"],
+  "scripts": [],
+  "packs": [],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "gridDistance": 5,
+  "gridUnits": "ft",
+  "primaryTokenAttribute": "hp",
+  "secondaryTokenAttribute": "mp",
+  "url": "",
+  "manifest": "",
+  "download": "",
+  "license": "LICENSE.txt",
+  "changelog": "CHANGELOG.md"
+}
