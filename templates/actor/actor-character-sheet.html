@@ -58,6 +58,22 @@
         </div>
 
         <div class="resource flex-group-center">
+          <label for="system.resources.ip.value" class="resource-label"
+            >IP</label
+          >
+          <div class="resource-content flexrow flex-center flex-between">
+            <input
+              type="text"
+              name="system.resources.ip.value"
+              value="{{system.resources.ip.value}}"
+              data-dtype="Number"
+            />
+            <span> / </span>
+            <span>{{ system.resources.ip.max }}</span>
+          </div>
+        </div>
+
+        <div class="resource flex-group-center">
           <label for="system.level.value" class="resource-label">Level</label>
           <div class="resource-content flexrow flex-center flex-between">
             <input

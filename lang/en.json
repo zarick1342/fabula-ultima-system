@@ -14,5 +14,15 @@
   "FABULAULTIMA.EffectEdit": "Edit Effect",
   "FABULAULTIMA.EffectDelete": "Delete Effect",
 
-  "FABULAULTIMA.Add": "Add"
+  "FABULAULTIMA.Add": "Add",
+
+  "FABULAULTIMA.BenefitHp": "+5 HP",
+  "FABULAULTIMA.BenefitMp": "+5 MP",
+  "FABULAULTIMA.BenefitIp": "+2 IP",
+  "FABULAULTIMA.BenefitProj": "Projects",
+  "FABULAULTIMA.BenefitRitual": "Ritualism",
+  "FABULAULTIMA.BenefitMelee": "Martial melee weapon proficiency",
+  "FABULAULTIMA.BenefitRanged": "Martial ranged weapon proficiency",
+  "FABULAULTIMA.BenefitArmor": "Martial armor proficiency",
+  "FABULAULTIMA.BenefitShields": "Martial shield proficiency"
 }

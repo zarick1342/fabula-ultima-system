@@ -45,7 +45,7 @@ export class FabulaUltimaActor extends Actor {
   _calculateDefenses(actorData) {
     const equipped = [];
     actorData.items.forEach((item) => {
-      if(item.system.isEquipped.value) {
+      if(item.system.isEquipped?.value) {
         equipped.push(item);
       }
     });
@@ -79,8 +79,13 @@ export class FabulaUltimaActor extends Actor {
 
   _calculateResources(actorData) {
     const systemData = actorData.system;
-    systemData.resources.hp.max = (systemData.attributes.mig.base * 5) + systemData.level.value;
-    systemData.resources.mp.max = (systemData.attributes.wlp.base * 5) + systemData.level.value;
+    const classes = actorData.items.filter((item) => item.type === 'class');
+    const classesWithHp = classes.filter((item) => item.system.benefits.hp.value);
+    const classesWithMp = classes.filter((item) => item.system.benefits.mp.value);
+    const classesWithIp = classes.filter((item) => item.system.benefits.ip.value);
+    systemData.resources.hp.max = (systemData.attributes.mig.base * 5) + systemData.level.value + (classesWithHp.length * 5);
+    systemData.resources.mp.max = (systemData.attributes.wlp.base * 5) + systemData.level.value + (classesWithMp.length * 5);
+    systemData.resources.ip.max = 6 + (classesWithIp.length * 2);
   }
 
   _handleStatusEffects(actorData) {
