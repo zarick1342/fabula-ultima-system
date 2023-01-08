@@ -93,12 +93,19 @@ export class FabulaUltimaActorSheet extends ActorSheet {
     // Iterate through items, allocating to containers
     for (let i of context.items) {
       i.img = i.img || DEFAULT_TOKEN;
+
       if(i.system.quality?.value) {
         i.quality = i.system.quality.value;
       }
 
-      i.isMartial = i.system.isMartial ? true : false;
+      i.isMartial = i.system.isMartial?.value ? true : false;
+      i.isOffensive = i.system.isOffensive?.value ? true : false;
       i.equipped = i.system.isEquipped?.value ? true : false;
+      i.level = i.system.level?.value;
+      i.class = i.system.class?.value;
+      i.mpCost = i.system.mpCost?.value;
+      i.target = i.system.target?.value;
+      i.duration = i.system.duration?.value;
 
       if(['armor', 'shield', 'accessory'].includes(i.type)) {
         i.def = i.isMartial && i.type === 'armor' ? i.system.def.value : `+${i.system.def.value}`;

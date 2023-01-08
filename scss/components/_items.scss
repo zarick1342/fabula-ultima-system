@@ -120,13 +120,15 @@
 
 .item-def,
 .item-mdef,
-.item-init {
+.item-init,
+.item-level {
   flex: 0 0 50px;
   padding: 0 8px;
   text-align: center;
 }
 
-.item-equipped {
+.item-equipped,
+.item-mpcost {
   flex: 0 0 72px;
   padding: 0 8px;
   text-align: center;
@@ -136,16 +138,31 @@
   color: red;
 }
 
-.item-attack {
+.item-attack,
+.item-class,
+.item-target,
+.item-duration {
   flex: 0 0 120px;
   padding: 0 8px;
   text-align: center;
-  font-weight: bold;
 }
 
+.item-target,
 .item-damage {
   flex: 0 0 150px;
   padding: 0 8px;
   text-align: center;
+}
+
+.item-attack,
+.item-class,
+.item-damage {
   font-weight: bold;
+}
+
+span[data-tooltip] {
+  display: inline-block;
+  padding: 5px;
+  background-color: #fff;
+  border: 1px solid #aaa;
 }

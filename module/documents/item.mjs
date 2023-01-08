@@ -47,6 +47,75 @@ export class FabulaUltimaItem extends Item {
     }
   }
 
+  async getSingleRollForItem() {
+    const item = this;
+    let content = '';
+
+    const hasDamage = item.type === 'weapon' || (['spell', 'skill'].includes(item.type) && item.system.rollInfo?.damage?.hasDamage?.value);
+
+    const attrs = item.type === 'weapon' ? item.system.attributes : item.system.rollInfo.attributes;
+    let accVal = item.type === 'weapon' ? item.system.accuracy.value : item.system.rollInfo.accuracy.value;
+    accVal = accVal ?? 0;
+
+    const primary = this.actor.system.attributes[attrs.primary.value].current;
+    const secondary = this.actor.system.attributes[attrs.secondary.value].current;
+    const roll = new Roll("1d@prim + 1d@sec + @mod", {prim: primary, sec: secondary, mod: accVal});
+    await roll.evaluate();
+
+    const acc = roll.total;
+    const diceResults = roll.terms.filter((term) => term.results).map((die) => die.results[0].result);
+    const hr = Math.max(...diceResults);
+    const isCrit = diceResults[0] === diceResults[1] && diceResults[0] >= 6;
+
+    const accString = `${diceResults[0]} (${attrs.primary.value.toUpperCase()}) + ${diceResults[1]} (${attrs.secondary.value.toUpperCase()}) + ${accVal} (${item.type})`;
+    const critString = isCrit ? "<strong>Critical hit!</strong><br />" : "";
+
+    content = `<strong>Accuracy:</strong> <span data-tooltip="${accString}">${acc}</span><br />${critString}`;
+
+    if(hasDamage) {
+      let damVal = item.type === 'weapon' ? item.system.damage.value : item.system.rollInfo.damage.value;
+      damVal = damVal ?? 0;
+      const damage = hr + damVal;
+      const damType = item.type === 'weapon' ? item.system.damageType.value : item.system.rollInfo.damage.type.value;
+      const damString = `${hr} (HR) + ${damVal} (${item.type})`;
+
+      content += `<strong>Damage:</strong> <span data-tooltip="${damString}">${damage}</span> ${damType}`;
+    }
+
+    return content;
+  }
+
+  async getRollString() {
+    const item = this;
+    let content = '';
+    const isSpellOrSkill = ['spell', 'skill'].includes(item.type);
+
+    const hasRoll = item.type === 'weapon' || (isSpellOrSkill && item.system.hasRoll.value);
+
+    if(hasRoll) {
+      const usesWeapons = isSpellOrSkill && (item.system.rollInfo?.useWeapon?.accuracy?.value || item.system.rollInfo?.useWeapon?.damage?.value);
+
+      if(usesWeapons) {
+        const equippedWeapons = item.actor.items.filter((singleItem) => singleItem.type === 'weapon' && singleItem.system.isEquipped?.value);
+        itemContents = [];
+        for(let i=0;i<equippedWeapons.length;i++) {
+          // const data = await this.getSingleRollForItem();
+          // itemContents.push(data);
+          // content = itemContents
+        }
+      } else {
+        content = await this.getSingleRollForItem();
+      }
+    }
+
+    return content;
+  }
+
+  getSpellDataString() {
+    const item = this;
+    return item.type === 'spell' ? `${item.system.mpCost.value} MP, ${item.system.target.value}, ${item.system.duration.value}` : '';
+  }
+
   /**
    * Handle clickable rolls.
    * @param {Event} event   The originating click event
@@ -58,41 +127,23 @@ export class FabulaUltimaItem extends Item {
     // Initialize chat data.
     const speaker = ChatMessage.getSpeaker({ actor: this.actor });
     const rollMode = game.settings.get('core', 'rollMode');
-    const label = `[${item.type}] ${item.name}`;
+    const label = `${item.name}`;
 
-    if(item.type === "weapon") {
-      console.log(this.actor);
-      const primary = this.actor.system.attributes[item.system.attributes.primary.value].current;
-      const secondary = this.actor.system.attributes[item.system.attributes.secondary.value].current;
-      const roll = new Roll("1d@prim + 1d@sec + @mod", {prim: primary, sec: secondary, mod: item.system.accuracy.value});
-      await roll.evaluate();
+    // If there's no roll data, send a chat message.
+    if (!this.system.formula) {
+      const desc = item.system.description ?? '';
+      const attackString = await this.getRollString();
+      const spellString = this.getSpellDataString();
 
-      const acc = roll.total;
-      const diceResults = roll.terms.filter((term) => term.results).map((die) => die.results[0].result);
-      const hr = Math.max(...diceResults);
-      const isCrit = diceResults[0] === diceResults[1] && diceResults[0] >= 6;
-      const damage = hr + item.system.damage.value;
+      let content = [spellString, desc, attackString].filter(part => part).join('<hr />');
 
-      let content = `${roll.result}<br />Accuracy: ${acc}, HR: ${hr} Damage: ${damage}`;
-      if(isCrit) {
-        content += " Critical hit!";
-      }
+      content = content ? `<hr />${content}` : '';
 
       ChatMessage.create({
         speaker: speaker,
         rollMode: rollMode,
         flavor: label,
         content
-      });
-    }
-
-    // If there's no roll data, send a chat message.
-    else if (!this.system.formula) {
-      ChatMessage.create({
-        speaker: speaker,
-        rollMode: rollMode,
-        flavor: label,
-        content: item.system.description ?? ''
       });
     }
     // Otherwise, create a roll and send a chat message from it.

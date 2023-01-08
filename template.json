@@ -99,6 +99,35 @@
       },
       "hasLevel": {
         "level": { "value": 1, "max": 10, "min": 0 }
+      },
+      "hasClass": {
+        "class": { "value": "" }
+      },
+      "hasRoll": {
+        "class": { "value": false }
+      },
+      "rollInfo": {
+        "useWeapon": {
+          "accuracy": {
+            "value": false
+          },
+          "damage": {
+            "value": false
+          },
+          "hrZero": {
+            "value": false
+          }
+        },
+        "attributes": {
+          "primary": { "value": "mig" },
+          "secondary": { "value": "mig" }
+        },
+        "accuracy": { "value": 0 },
+        "damage": {
+          "hasDamage": { "value": false },
+          "value": 0,
+          "type": { "value": "physical" }
+        }
       }
     },
     "weapon": {
@@ -111,7 +140,7 @@
       "damage": { "value": 6 },
       "hands": { "value": 1 },
       "type": { "value": "Melee" },
-      "damageType": { "value": "phys" }
+      "damageType": { "value": "physical" }
     },
     "shield": {
       "templates": ["base", "item", "equippable", "defensive"]
@@ -137,10 +166,10 @@
       }
     },
     "skill": {
-      "templates": ["base", "hasLevel"]
+      "templates": ["base", "hasLevel", "hasClass", "rollInfo"]
     },
     "spell": {
-      "templates": ["base"],
+      "templates": ["base", "hasClass", "rollInfo"],
       "mpCost": { "value": "" },
       "target": { "value": "" },
       "duration": { "value": "" },

@@ -26,58 +26,52 @@
         will add a small amount of padding, a border, and will center all of its
         child elements content and text. --}}
         <div class="resource flex-group-center">
-          <label for="system.health.value" class="resource-label">Health</label>
+          <label for="system.health.value" class="resource-label">HP</label>
           <div class="resource-content flexrow flex-center flex-between">
             <input
               type="text"
-              name="system.health.value"
-              value="{{system.health.value}}"
+              name="system.resources.hp.value"
+              value="{{system.resources.hp.value}}"
               data-dtype="Number"
             />
             <span> / </span>
             <input
               type="text"
-              name="system.health.max"
-              value="{{system.health.max}}"
+              name="system.resources.hp.max"
+              value="{{system.resources.hp.max}}"
               data-dtype="Number"
             />
           </div>
         </div>
 
         <div class="resource flex-group-center">
-          <label for="system.power.value" class="resource-label">Power</label>
+          <label for="system.resources.mp.value" class="resource-label"
+            >MP</label
+          >
           <div class="resource-content flexrow flex-center flex-between">
             <input
               type="text"
-              name="system.power.value"
-              value="{{system.power.value}}"
+              name="system.resources.mp.value"
+              value="{{system.resources.mp.value}}"
               data-dtype="Number"
             />
             <span> / </span>
             <input
               type="text"
-              name="system.power.max"
-              value="{{system.power.max}}"
+              name="system.resources.mp.max"
+              value="{{system.resources.mp.max}}"
               data-dtype="Number"
             />
           </div>
         </div>
 
         <div class="resource flex-group-center">
-          <label for="system.cr" class="resource-label">CR / XP</label>
+          <label for="system.level.value" class="resource-label">Level</label>
           <div class="resource-content flexrow flex-center flex-between">
             <input
               type="text"
-              name="system.cr"
-              value="{{system.cr}}"
-              data-dtype="Number"
-            />
-            <span> / </span>
-            <input
-              type="text"
-              disabled="true"
-              name="system.xp"
-              value="{{system.xp}}"
+              name="system.level.value"
+              value="{{system.level.value}}"
               data-dtype="Number"
             />
           </div>
@@ -90,7 +84,9 @@
   <nav class="sheet-tabs tabs" data-group="primary">
     {{!-- Default tab is specified in actor-sheet.mjs --}}
     <a class="item" data-tab="description">Description</a>
+    <a class="item" data-tab="skills">Skills</a>
     <a class="item" data-tab="items">Items</a>
+    <a class="item" data-tab="spells">Spells</a>
     <a class="item" data-tab="effects">Effects</a>
   </nav>
 
@@ -104,9 +100,18 @@
       button=true owner=owner editable=editable}}
     </div>
 
+    {{!-- Skills Tab --}}
+    <div class="tab skills" data-group="primary" data-tab="skills">
+      {{> "systems/fabulaultima/templates/actor/parts/actor-features.html"}}
+    </div>
+
     {{!-- Owned Items Tab --}}
     <div class="tab items" data-group="primary" data-tab="items">
       {{> "systems/fabulaultima/templates/actor/parts/actor-items.html"}}
+    </div>
+
+    <div class="tab spells" data-group="primary" data-tab="spells">
+      {{> "systems/fabulaultima/templates/actor/parts/actor-spells.html"}}
     </div>
 
     {{!-- Active Effects Tab --}}
