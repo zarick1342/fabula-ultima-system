@@ -292,7 +292,10 @@ export class FabulaUltimaItem extends Item {
         speaker: speaker,
         rollMode: rollMode,
         flavor: label,
-        content
+        content,
+        flags: {
+          item: this
+        }
       });
     }
     // Otherwise, create a roll and send a chat message from it.
