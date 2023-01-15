@@ -1,5 +1,15 @@
 import {onManageActiveEffect, prepareActiveEffectCategories} from "../helpers/effects.mjs";
 
+/* Randomize array in-place using Durstenfeld shuffle algorithm */
+function shuffleArray(array) {
+    for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+}
+
 /**
  * Extend the basic ActorSheet with some very simple modifications
  * @extends {ActorSheet}
@@ -39,15 +49,15 @@ export class FabulaUltimaActorSheet extends ActorSheet {
     context.system = actorData.system;
     context.flags = actorData.flags;
 
+    this._prepareItems(context);
+    this._prepareCharacterData(context);
+
     // Prepare character data and items.
     if (actorData.type == 'character') {
-      this._prepareItems(context);
-      this._prepareCharacterData(context);
     }
 
     // Prepare NPC data and items.
     if (actorData.type == 'npc') {
-      this._prepareItems(context);
     }
 
     // Add roll data for TinyMCE editors.
@@ -89,6 +99,8 @@ export class FabulaUltimaActorSheet extends ActorSheet {
     const classes = [];
     const skills = [];
     const spells = [];
+    const abilities = [];
+    const behaviors = [];
 
     // Iterate through items, allocating to containers
     for (let i of context.items) {
@@ -134,6 +146,10 @@ export class FabulaUltimaActorSheet extends ActorSheet {
         skills.push(i);
       } else if (i.type === 'spell') {
         spells.push(i);
+      } else if (i.type === 'miscAbility') {
+        abilities.push(i);
+      } else if (i.type === 'behavior') {
+        behaviors.push(i);
       }
     }
 
@@ -145,6 +161,8 @@ export class FabulaUltimaActorSheet extends ActorSheet {
     context.classes = classes;
     context.skills = skills;
     context.spells = spells;
+    context.abilities = abilities;
+    context.behaviors = behaviors;
   }
 
   /* -------------------------------------------- */
@@ -227,6 +245,38 @@ export class FabulaUltimaActorSheet extends ActorSheet {
     return await Item.create(itemData, {parent: this.actor});
   }
 
+  _rollBehavior() {
+    const behaviors = this.actor.items.filter((item) => item.type === 'behavior');
+    const behaviorMap = [];
+
+    behaviors.forEach((behavior) => {
+      for(let i=0;i<behavior.system.weight.value;i++) {
+        behaviorMap.push({
+          name: behavior.name,
+          desc: behavior.system.description,
+          id: behavior.id
+        });
+      }
+    });
+
+    const randVal = Math.floor(Math.random() * behaviorMap.length);
+    const selected = behaviorMap[randVal];
+
+    const targetArray = [1,2,3,4,5,6];
+    shuffleArray(targetArray);
+
+    const content = `<b>Enemy:</b> ${this.actor.name}<br /><b>Selected behavior:</b> ${selected.name}<br /><b>Target priority:</b> ${targetArray.join(' -> ')}`;
+
+    let chatData = {
+      user: game.user._id,
+      speaker: ChatMessage.getSpeaker(),
+      whisper: game.user._id,
+      content
+    };
+
+    ChatMessage.create(chatData, {});
+  }
+
   /**
    * Handle clickable rolls.
    * @param {Event} event   The originating click event
@@ -244,11 +294,15 @@ export class FabulaUltimaActorSheet extends ActorSheet {
         const item = this.actor.items.get(itemId);
         if (item) return item.roll();
       }
+
+      if(dataset.rollType == 'behavior') {
+        return this._rollBehavior();
+      }
     }
 
     // Handle rolls that supply the formula directly.
     if (dataset.roll) {
-      let label = dataset.label ? `[ability] ${dataset.label}` : '';
+      let label = dataset.label ? `${dataset.label}` : '';
       let roll = new Roll(dataset.roll, this.actor.getRollData());
       roll.toMessage({
         speaker: ChatMessage.getSpeaker({ actor: this.actor }),

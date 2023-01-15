@@ -35,6 +35,8 @@ export class FabulaUltimaActor extends Actor {
 
     this._calculateResources(actorData);
     this._handleStatusEffects(actorData);
+    this._calculateDefenses(actorData);
+    this._calculateInitOrInitMod(actorData);
 
     // Make separate methods for each Actor type (character, npc, etc.) to keep
     // things organized.
@@ -60,8 +62,9 @@ export class FabulaUltimaActor extends Actor {
 
       return def;
     }, 0)
+    const bonusDef = actorData.system.derived.def.bonus ?? 0;
 
-    const def = baseDef + otherDef;
+    const def = baseDef + otherDef + bonusDef;
 
     const nonWeapons = equipped.filter((item) => item.type !== 'weapon');
     const ins = actorData.system.attributes.ins.current;
@@ -70,8 +73,9 @@ export class FabulaUltimaActor extends Actor {
 
       return mdef;
     }, 0);
+    const bonusMDef = actorData.system.derived.mdef.bonus ?? 0;
 
-    const mdef = ins + otherMDef;
+    const mdef = ins + otherMDef + bonusMDef;
 
     actorData.system.derived.def.value = def;
     actorData.system.derived.mdef.value = mdef;
@@ -83,9 +87,12 @@ export class FabulaUltimaActor extends Actor {
     const classesWithHp = classes.filter((item) => item.system.benefits.hp.value);
     const classesWithMp = classes.filter((item) => item.system.benefits.mp.value);
     const classesWithIp = classes.filter((item) => item.system.benefits.ip.value);
-    systemData.resources.hp.max = (systemData.attributes.mig.base * 5) + systemData.level.value + (classesWithHp.length * 5);
-    systemData.resources.mp.max = (systemData.attributes.wlp.base * 5) + systemData.level.value + (classesWithMp.length * 5);
-    systemData.resources.ip.max = 6 + (classesWithIp.length * 2);
+    const levelVal = actorData.type === 'npc' ? systemData.level.value * 2 : systemData.level.value;
+    systemData.resources.hp.max = (systemData.attributes.mig.base * 5) + levelVal + (classesWithHp.length * 5) + systemData.resources.hp.bonus;
+    systemData.resources.mp.max = (systemData.attributes.wlp.base * 5) + systemData.level.value + (classesWithMp.length * 5) + systemData.resources.mp.bonus;
+    if(actorData.type === 'character') {
+      systemData.resources.ip.max = 6 + (classesWithIp.length * 2);
+    }
   }
 
   _handleStatusEffects(actorData) {
@@ -116,6 +123,17 @@ export class FabulaUltimaActor extends Actor {
     }
   }
 
+  _calculateInitOrInitMod(actorData) {
+    const equipped = actorData.items.filter((item) => item.system.isEquipped?.value && ['armor', 'shield', 'accessory'].includes(item.type));
+    const initMod = equipped.reduce((mod, item) => {
+      const itemMod = item.system.init?.value ?? 0;
+      return mod += itemMod;
+    }, 0);
+    const initBonus = actorData.system.derived.init?.bonus ?? 0;
+
+    actorData.system.derived.init.value = actorData.type === 'npc' ? initMod + ((actorData.system.attributes.dex.base + actorData.system.attributes.ins.base) / 2) + initBonus : initMod + initBonus;
+  }
+
   /**
    * Prepare Character type specific data
    */
@@ -124,8 +142,6 @@ export class FabulaUltimaActor extends Actor {
 
     // Make modifications to data here. For example:
     const systemData = actorData.system;
-
-    this._calculateDefenses(actorData);
 
     // Loop through ability scores, and add their modifiers to our sheet output.
     // for (let [key, ability] of Object.entries(systemData.abilities)) {

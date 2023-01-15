@@ -101,6 +101,18 @@
             <span>{{ system.derived.mdef.value }}</span>
           </div>
         </div>
+        <div class="resource flex-group-center">
+          <label for="system.derived.init.value" class="resource-label"
+            >Init</label
+          >
+          <div
+            class="resource-content flexrow flex-center flex-between rollable"
+            data-label="Initiative"
+            data-roll="1d@attributes.dex.current + 1d@attributes.ins.current + @derived.init.value"
+          >
+            <span>{{ system.derived.init.value }}</span>
+          </div>
+        </div>
       </div>
     </div>
   </header>

@@ -26,7 +26,7 @@
         will add a small amount of padding, a border, and will center all of its
         child elements content and text. --}}
         <div class="resource flex-group-center">
-          <label for="system.health.value" class="resource-label">HP</label>
+          <label for="system.resources.hp.max" class="resource-label">HP</label>
           <div class="resource-content flexrow flex-center flex-between">
             <input
               type="text"
@@ -76,6 +76,30 @@
             />
           </div>
         </div>
+        <div class="resource flex-group-center">
+          <label for="system.derived.def.value" class="resource-label"
+            >Def</label
+          >
+          <div class="resource-content flexrow flex-center flex-between">
+            <span>{{ system.derived.def.value }}</span>
+          </div>
+        </div>
+        <div class="resource flex-group-center">
+          <label for="system.derived.def.value" class="resource-label"
+            >MDef</label
+          >
+          <div class="resource-content flexrow flex-center flex-between">
+            <span>{{ system.derived.mdef.value }}</span>
+          </div>
+        </div>
+        <div class="resource flex-group-center">
+          <label for="system.derived.def.value" class="resource-label"
+            >Init</label
+          >
+          <div class="resource-content flexrow flex-center flex-between">
+            <span>{{ system.derived.init.value }}</span>
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -83,26 +107,129 @@
   {{!-- Sheet Tab Navigation --}}
   <nav class="sheet-tabs tabs" data-group="primary">
     {{!-- Default tab is specified in actor-sheet.mjs --}}
-    <a class="item" data-tab="description">Description</a>
-    <a class="item" data-tab="skills">Skills</a>
+    <a class="item" data-tab="attributes">Attributes</a>
     <a class="item" data-tab="items">Items</a>
     <a class="item" data-tab="spells">Spells</a>
-    <a class="item" data-tab="effects">Effects</a>
+    <a class="item" data-tab="behavior">Behavior</a>
   </nav>
 
   {{!-- Sheet Body --}}
   <section class="sheet-body">
+    {{!-- Owned Features Tab --}}
+    <div class="tab features" data-group="primary" data-tab="attributes">
+      <section class="grid grid-3col">
+        <aside class="sidebar">
+          {{!-- The grid classes are defined in scss/global/_grid.scss. To use,
+          use both the "grid" and "grid-Ncol" class where "N" can be any number
+          from 1 to 12 and will create that number of columns. --}}
+          <div class="abilities flexcol">
+            {{#each system.attributes as |attribute key|}}
+            <div class="ability flexrow flex-group-center">
+              <label
+                for="system.attributes.{{key}}.base"
+                class="resource-label flexlarge align-left"
+                data-label="{{attribute.label}}"
+                >{{attribute.label}}</label
+              >
+              <select
+                data-dtype="Number"
+                value="{{attribute.base}}"
+                name="system.attributes.{{key}}.base"
+              >
+                {{#select attribute.base}}
+                <option value="6">d6</option>
+                <option value="8">d8</option>
+                <option value="10">d10</option>
+                <option value="12">d12</option>
+                {{/select}}
+              </select>
+              <span class="ability-mod">{{ attribute.current }}</span>
+            </div>
+            {{/each}}
+          </div>
+        </aside>
+
+        {{!-- For the main features list, span the right two columns --}}
+        <section class="main grid-span-2">
+          {{#each system.status as |status key|}}
+          <label class="checkbox">
+            <span>{{ key }}</span
+            ><input
+              type="checkbox"
+              name="system.status.{{key}}.value"
+              {{
+              checked
+              status.value
+              }}
+            />
+          </label>
+          {{/each}}
+
+          <div class="resource flex-group-center">
+            <label for="system.health.value" class="resource-label"
+              >Bonus HP</label
+            >
+            <input
+              type="text"
+              name="system.resources.hp.bonus"
+              value="{{system.resources.hp.bonus}}"
+              data-dtype="Number"
+            />
+          </div>
+          <div class="resource flex-group-center">
+            <label for="system.health.value" class="resource-label"
+              >Bonus MP</label
+            >
+            <input
+              type="text"
+              name="system.resources.mp.bonus"
+              value="{{system.resources.mp.bonus}}"
+              data-dtype="Number"
+            />
+          </div>
+          <div class="resource flex-group-center">
+            <label for="system.health.value" class="resource-label"
+              >Bonus Def</label
+            >
+            <input
+              type="text"
+              name="system.derived.def.bonus"
+              value="{{system.derived.def.bonus}}"
+              data-dtype="Number"
+            />
+          </div>
+          <div class="resource flex-group-center">
+            <label for="system.health.value" class="resource-label"
+              >Bonus MDef</label
+            >
+            <input
+              type="text"
+              name="system.derived.mdef.bonus"
+              value="{{system.derived.mdef.bonus}}"
+              data-dtype="Number"
+            />
+          </div>
+          <div class="resource flex-group-center">
+            <label for="system.health.value" class="resource-label"
+              >Bonus Init</label
+            >
+            <input
+              type="text"
+              name="system.derived.init.bonus"
+              value="{{system.derived.init.bonus}}"
+              data-dtype="Number"
+            />
+          </div>
+        </section>
+      </section>
+    </div>
+
     {{!-- Biography Tab --}}
     <div class="tab biography" data-group="primary" data-tab="description">
       {{!-- If you want TinyMCE editors to output inline rolls when rendered,
       you need to pass the actor's roll data to the rollData property. --}}
       {{editor system.biography target="system.biography" rollData=rollData
       button=true owner=owner editable=editable}}
-    </div>
-
-    {{!-- Skills Tab --}}
-    <div class="tab skills" data-group="primary" data-tab="skills">
-      {{> "systems/fabulaultima/templates/actor/parts/actor-features.html"}}
     </div>
 
     {{!-- Owned Items Tab --}}
@@ -115,8 +242,8 @@
     </div>
 
     {{!-- Active Effects Tab --}}
-    <div class="tab effects flexcol" data-group="primary" data-tab="effects">
-      {{> "systems/fabulaultima/templates/actor/parts/actor-effects.html"}}
+    <div class="tab behavior" data-group="primary" data-tab="behavior">
+      {{> "systems/fabulaultima/templates/actor/parts/actor-behavior.html"}}
     </div>
   </section>
 </form>
