@@ -69,7 +69,9 @@
       }
     },
     "npc": {
-      "templates": ["base"]
+      "templates": ["base"],
+      "isElite": { "value": false },
+      "isChampion": { "value": 1 }
     }
   },
   "Item": {

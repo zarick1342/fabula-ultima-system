@@ -87,9 +87,11 @@ export class FabulaUltimaActor extends Actor {
     const classesWithHp = classes.filter((item) => item.system.benefits.hp.value);
     const classesWithMp = classes.filter((item) => item.system.benefits.mp.value);
     const classesWithIp = classes.filter((item) => item.system.benefits.ip.value);
+    const hpMultiplier = actorData.type !== 'npc' ? 1 : systemData.isChampion.value !== 1 ? systemData.isChampion.value : systemData.isElite.value ? 2 : 1;
+    const mpMultiplier = actorData.type !== 'npc' ? 1 : systemData.isChampion.value !== 1 ? 2 : 1;
     const levelVal = actorData.type === 'npc' ? systemData.level.value * 2 : systemData.level.value;
-    systemData.resources.hp.max = (systemData.attributes.mig.base * 5) + levelVal + (classesWithHp.length * 5) + systemData.resources.hp.bonus;
-    systemData.resources.mp.max = (systemData.attributes.wlp.base * 5) + systemData.level.value + (classesWithMp.length * 5) + systemData.resources.mp.bonus;
+    systemData.resources.hp.max = ((systemData.attributes.mig.base * 5) + levelVal + (classesWithHp.length * 5) + systemData.resources.hp.bonus) * hpMultiplier;
+    systemData.resources.mp.max = ((systemData.attributes.wlp.base * 5) + systemData.level.value + (classesWithMp.length * 5) + systemData.resources.mp.bonus) * mpMultiplier;
     if(actorData.type === 'character') {
       systemData.resources.ip.max = 6 + (classesWithIp.length * 2);
     }
@@ -130,8 +132,9 @@ export class FabulaUltimaActor extends Actor {
       return mod += itemMod;
     }, 0);
     const initBonus = actorData.system.derived.init?.bonus ?? 0;
+    const eliteOrChampBonus = actorData.type !== 'npc' ? 0 : actorData.system.isChampion.value !== 1 ? actorData.system.isChampion.value : actorData.system.isElite.value ? 2 : 0;
 
-    actorData.system.derived.init.value = actorData.type === 'npc' ? initMod + ((actorData.system.attributes.dex.base + actorData.system.attributes.ins.base) / 2) + initBonus : initMod + initBonus;
+    actorData.system.derived.init.value = actorData.type === 'npc' ? initMod + ((actorData.system.attributes.dex.base + actorData.system.attributes.ins.base) / 2) + initBonus + eliteOrChampBonus : initMod + initBonus;
   }
 
   /**
@@ -202,4 +205,40 @@ export class FabulaUltimaActor extends Actor {
     // Process additional NPC data here.
   }
 
+  async _preUpdate(changed, options, user) {
+    const changedHP = changed.system?.resources?.hp;
+    const currentHP = this.system.resources.hp;
+    if (typeof changedHP?.value === "number" && currentHP) {
+        const hpChange = changedHP.value - currentHP.value;
+        const levelChanged = !!changed.system && "level" in changed.system;
+        if (hpChange !== 0 && !levelChanged) options.damageTaken = hpChange * -1;
+    }
+
+    await super._preUpdate(changed, options, user);
+  }
+
+  _onUpdate(changed, options, userId) {
+    super._onUpdate(changed, options, userId);
+
+    if(options.damageTaken) {
+      this.showFloatyText(options.damageTaken);
+    }
+  }
+
+  async showFloatyText(input) {
+    if(typeof input === 'number') {
+      const scrollingTextArgs = [
+        { x: this.token.x, y: this.token.y },
+        Math.abs(input),
+        {
+          fill: input < 0 ? "green" : "white"
+        }
+      ];
+    }
+
+    if (!scrollingTextArgs) return;
+
+    await this.token._animation;
+    await canvas.interface?.createScrollingText(...scrollingTextArgs);
+  }
 }

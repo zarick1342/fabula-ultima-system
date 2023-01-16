@@ -167,6 +167,28 @@
 
           <div class="resource flex-group-center">
             <label for="system.health.value" class="resource-label"
+              >Champion Value</label
+            >
+            <input
+              type="text"
+              name="system.isChampion.value"
+              value="{{system.isChampion.value}}"
+              data-dtype="Number"
+            />
+          </div>
+          <label class="checkbox">
+            <span>Elite?</span
+            ><input
+              type="checkbox"
+              name="system.isElite.value"
+              {{
+              checked
+              system.isElite.value
+              }}
+            />
+          </label>
+          <div class="resource flex-group-center">
+            <label for="system.health.value" class="resource-label"
               >Bonus HP</label
             >
             <input
