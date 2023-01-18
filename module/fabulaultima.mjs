@@ -38,6 +38,39 @@ Hooks.once('init', async function() {
   CONFIG.Actor.documentClass = FabulaUltimaActor;
   CONFIG.Item.documentClass = FabulaUltimaItem;
 
+  CONFIG.statusEffects = [
+    {
+    'id': 'dazed',
+    'label': 'Dazed',
+    'icon': 'systems/fabulaultima/images/Dazed.png'
+    },
+    {
+      'id': 'enraged',
+      'label': 'Enraged',
+      'icon': 'systems/fabulaultima/images/Enraged.png'
+    },
+    {
+      'id': 'shaken',
+      'label': 'Shaken',
+      'icon': 'systems/fabulaultima/images/Shaken.png'
+    },
+    {
+      'id': 'slow',
+      'label': 'Slow',
+      'icon': 'systems/fabulaultima/images/Slow.png'
+    },
+    {
+      'id': 'poisoned',
+      'label': 'Poisoned',
+      'icon': 'systems/fabulaultima/images/Poisoned.png'
+    },
+    {
+      'id': 'weak',
+      'label': 'Weak',
+      'icon': 'systems/fabulaultima/images/Weak.png'
+    },
+  ];
+
   // Register sheet application classes
   Actors.unregisterSheet("core", ActorSheet);
   Actors.registerSheet("fabulaultima", FabulaUltimaActorSheet, { makeDefault: true });

@@ -102,6 +102,8 @@ export class FabulaUltimaActor extends Actor {
     const statVals = [6,8,10,12];
     let activeStatus = [];
 
+    console.log(systemData);
+
     for (let [key, status] of Object.entries(systemData.status)) {
       if(status.value) {
         activeStatus = [...activeStatus, ...status.stats];
@@ -226,12 +228,19 @@ export class FabulaUltimaActor extends Actor {
   }
 
   async showFloatyText(input) {
+    let scrollingTextArgs;
+
+    const gridSize = canvas.scene.grid.size;
+
     if(typeof input === 'number') {
-      const scrollingTextArgs = [
-        { x: this.token.x, y: this.token.y },
+      scrollingTextArgs = [
+        { x: this.token.x + (gridSize / 2), y: this.token.y + gridSize - 20 },
         Math.abs(input),
         {
-          fill: input < 0 ? "green" : "white"
+          fill: input < 0 ? "lightgreen" : "white",
+          fontSize: 32,
+          stroke: 0x000000,
+          strokeThickness: 4
         }
       ];
     }

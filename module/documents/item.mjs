@@ -68,16 +68,18 @@ export class FabulaUltimaItem extends Item {
     const acc = roll.total + bonusAccVal;
     const diceResults = roll.terms.filter((term) => term.results).map((die) => die.results[0].result);
     const hr = this.system.rollInfo && this.system.rollInfo.useWeapon?.hrZero?.value ? 0 : Math.max(...diceResults);
-    const isCrit = diceResults[0] === diceResults[1] && diceResults[0] >= 6;
+    const isFumble = diceResults[0] === 1 && diceResults[1] === 1;
+    const isCrit = !isFumble && diceResults[0] === diceResults[1] && diceResults[0] >= 6;
 
     const accString = `${diceResults[0]} (${attrs.primary.value.toUpperCase()}) + ${diceResults[1]} (${attrs.secondary.value.toUpperCase()}) + ${accVal} (${item.type})${bonusAccValString}`;
+    const fumbleString = isFumble ? "<strong>Fumble!</strong><br />" : "";
     const critString = isCrit ? "<strong>Critical hit!</strong><br />" : "";
 
     if(addName) {
       content += `<strong>${item.name}</strong><br />`;
     }
 
-    content += `<strong>Accuracy:</strong> <span data-tooltip="${accString}">${acc}</span><br />${critString}`;
+    content += `<strong>Accuracy:</strong> <span data-tooltip="${accString}">${acc}</span><br />${critString}${fumbleString}`;
 
     if(hasDamage) {
       let damVal = item.type === 'weapon' ? item.system.damage.value : item.system.rollInfo.damage.value;
