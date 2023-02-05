@@ -10,3 +10,16 @@
     cursor: pointer;
   }
 }
+
+.notification.fabulaultima-spellname {
+  background-color: blue;
+  border: 5px solid white;
+  padding: 1rem;
+  border-radius: 5px;
+  font-size: 2rem;
+  text-align: center;
+
+  .close {
+    display: none;
+  }
+}

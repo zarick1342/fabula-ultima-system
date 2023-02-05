@@ -32,5 +32,6 @@
   "manifest": "",
   "download": "",
   "license": "LICENSE.txt",
-  "changelog": "CHANGELOG.md"
+  "changelog": "CHANGELOG.md",
+  "socket": true
 }

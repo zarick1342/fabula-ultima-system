@@ -12,14 +12,13 @@ import { FABULAULTIMA } from "./helpers/config.mjs";
 /*  Init Hook                                   */
 /* -------------------------------------------- */
 
-Hooks.once('init', async function() {
-
+Hooks.once("init", async function () {
   // Add utility classes to the global game object so that they're more easily
   // accessible in global contexts.
   game.fabulaultima = {
     FabulaUltimaActor,
     FabulaUltimaItem,
-    rollItemMacro
+    rollItemMacro,
   };
 
   // Add custom constants for configuration.
@@ -31,7 +30,7 @@ Hooks.once('init', async function() {
    */
   CONFIG.Combat.initiative = {
     formula: "1d20 + @abilities.dex.mod",
-    decimals: 2
+    decimals: 2,
   };
 
   // Define custom Document classes
@@ -40,42 +39,106 @@ Hooks.once('init', async function() {
 
   CONFIG.statusEffects = [
     {
-    'id': 'dazed',
-    'label': 'Dazed',
-    'icon': 'systems/fabulaultima/images/Dazed.png'
+      id: "accelerated",
+      label: "Accelerated",
+      icon: "systems/fabulaultima/images/Accelerated.webp",
     },
     {
-      'id': 'enraged',
-      'label': 'Enraged',
-      'icon': 'systems/fabulaultima/images/Enraged.png'
+      id: "aura",
+      label: "Aura",
+      icon: "systems/fabulaultima/images/Aura.webp",
     },
     {
-      'id': 'shaken',
-      'label': 'Shaken',
-      'icon': 'systems/fabulaultima/images/Shaken.png'
+      id: "barrier",
+      label: "Barrier",
+      icon: "systems/fabulaultima/images/Barrier.webp",
     },
     {
-      'id': 'slow',
-      'label': 'Slow',
-      'icon': 'systems/fabulaultima/images/Slow.png'
+      id: "dazed",
+      label: "Dazed",
+      icon: "systems/fabulaultima/images/Dazed.webp",
+      stats: ["ins"],
+      mod: -2,
     },
     {
-      'id': 'poisoned',
-      'label': 'Poisoned',
-      'icon': 'systems/fabulaultima/images/Poisoned.png'
+      id: "dex-up",
+      label: "DEX Up",
+      icon: "systems/fabulaultima/images/DexUp.webp",
+      stats: ["dex"],
+      mod: 2,
     },
     {
-      'id': 'weak',
-      'label': 'Weak',
-      'icon': 'systems/fabulaultima/images/Weak.png'
+      id: "enraged",
+      label: "Enraged",
+      icon: "systems/fabulaultima/images/Enraged.webp",
+      stats: ["dex", "ins"],
+      mod: -2,
+    },
+    {
+      id: "ins-up",
+      label: "INS Up",
+      icon: "systems/fabulaultima/images/InsUp.webp",
+      stats: ["ins"],
+      mod: 2,
+    },
+    {
+      id: "ko",
+      label: "KO",
+      icon: "systems/fabulaultima/images/KO.webp",
+    },
+    {
+      id: "mig-up",
+      label: "MIG Up",
+      icon: "systems/fabulaultima/images/MigUp.webp",
+      stats: ["mig"],
+      mod: 2,
+    },
+    {
+      id: "shaken",
+      label: "Shaken",
+      icon: "systems/fabulaultima/images/Shaken.webp",
+      stats: ["wlp"],
+      mod: -2,
+    },
+    {
+      id: "slow",
+      label: "Slow",
+      icon: "systems/fabulaultima/images/Slow.webp",
+      stats: ["dex"],
+      mod: -2,
+    },
+    {
+      id: "poisoned",
+      label: "Poisoned",
+      icon: "systems/fabulaultima/images/Poisoned.webp",
+      stats: ["mig", "wlp"],
+      mod: -2,
+    },
+    {
+      id: "weak",
+      label: "Weak",
+      icon: "systems/fabulaultima/images/Weak.webp",
+      stats: ["mig"],
+      mod: -2,
+    },
+    {
+      id: "wlp-up",
+      label: "WLP Up",
+      icon: "systems/fabulaultima/images/WlpUp.webp",
+      stats: ["wlp"],
+      mod: 2,
     },
   ];
 
   // Register sheet application classes
   Actors.unregisterSheet("core", ActorSheet);
-  Actors.registerSheet("fabulaultima", FabulaUltimaActorSheet, { makeDefault: true });
+  Actors.registerSheet("fabulaultima", FabulaUltimaActorSheet, {
+    makeDefault: true,
+  });
   Items.unregisterSheet("core", ItemSheet);
-  Items.registerSheet("fabulaultima", FabulaUltimaItemSheet, { makeDefault: true });
+  Items.registerSheet("fabulaultima", FabulaUltimaItemSheet, {
+    makeDefault: true,
+  });
 
   // Preload Handlebars templates.
   return preloadHandlebarsTemplates();
@@ -86,17 +149,17 @@ Hooks.once('init', async function() {
 /* -------------------------------------------- */
 
 // If you need to add Handlebars helpers, here are a few useful examples:
-Handlebars.registerHelper('concat', function() {
-  var outStr = '';
+Handlebars.registerHelper("concat", function () {
+  var outStr = "";
   for (var arg in arguments) {
-    if (typeof arguments[arg] != 'object') {
+    if (typeof arguments[arg] != "object") {
       outStr += arguments[arg];
     }
   }
   return outStr;
 });
 
-Handlebars.registerHelper('toLowerCase', function(str) {
+Handlebars.registerHelper("toLowerCase", function (str) {
   return str.toLowerCase();
 });
 
@@ -104,9 +167,14 @@ Handlebars.registerHelper('toLowerCase', function(str) {
 /*  Ready Hook                                  */
 /* -------------------------------------------- */
 
-Hooks.once("ready", async function() {
+Hooks.once("ready", async function () {
   // Wait to register hotbar drop hook on ready so that modules could register earlier if they want to
   Hooks.on("hotbarDrop", (bar, data, slot) => createItemMacro(data, slot));
+});
+
+Hooks.once("socketlib.ready", () => {
+  const socket = socketlib.registerSystem("fabulaultima");
+  socket.register("floatingText", displayFloatingText);
 });
 
 /* -------------------------------------------- */
@@ -123,22 +191,26 @@ Hooks.once("ready", async function() {
 async function createItemMacro(data, slot) {
   // First, determine if this is a valid owned item.
   if (data.type !== "Item") return;
-  if (!data.uuid.includes('Actor.') && !data.uuid.includes('Token.')) {
-    return ui.notifications.warn("You can only create macro buttons for owned Items");
+  if (!data.uuid.includes("Actor.") && !data.uuid.includes("Token.")) {
+    return ui.notifications.warn(
+      "You can only create macro buttons for owned Items"
+    );
   }
   // If it is, retrieve it based on the uuid.
   const item = await Item.fromDropData(data);
 
   // Create the macro command using the uuid.
   const command = `game.fabulaultima.rollItemMacro("${data.uuid}");`;
-  let macro = game.macros.find(m => (m.name === item.name) && (m.command === command));
+  let macro = game.macros.find(
+    (m) => m.name === item.name && m.command === command
+  );
   if (!macro) {
     macro = await Macro.create({
       name: item.name,
       type: "script",
       img: item.img,
       command: command,
-      flags: { "fabulaultima.itemMacro": true }
+      flags: { "fabulaultima.itemMacro": true },
     });
   }
   game.user.assignHotbarMacro(macro, slot);
@@ -153,18 +225,31 @@ async function createItemMacro(data, slot) {
 function rollItemMacro(itemUuid) {
   // Reconstruct the drop data so that we can load the item.
   const dropData = {
-    type: 'Item',
-    uuid: itemUuid
+    type: "Item",
+    uuid: itemUuid,
   };
   // Load the item from the uuid.
-  Item.fromDropData(dropData).then(item => {
+  Item.fromDropData(dropData).then((item) => {
     // Determine if the item loaded and if it's an owned item.
     if (!item || !item.parent) {
       const itemName = item?.name ?? itemUuid;
-      return ui.notifications.warn(`Could not find item ${itemName}. You may need to delete and recreate this macro.`);
+      return ui.notifications.warn(
+        `Could not find item ${itemName}. You may need to delete and recreate this macro.`
+      );
     }
 
     // Trigger the item roll
     item.roll();
   });
+}
+
+function displayFloatingText(text) {
+  ui.notifications.queue.push({
+    message: text,
+    type: "fabulaultima-spellname",
+    timestamp: new Date().getTime(),
+    permanent: false,
+    console: false,
+  });
+  if (ui.notifications.rendered) ui.notifications.fetch();
 }

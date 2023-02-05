@@ -3,7 +3,6 @@
  * @extends {Actor}
  */
 export class FabulaUltimaActor extends Actor {
-
   /** @override */
   prepareData() {
     // Prepare data for the actor. Calling the super version of this executes
@@ -47,26 +46,32 @@ export class FabulaUltimaActor extends Actor {
   _calculateDefenses(actorData) {
     const equipped = [];
     actorData.items.forEach((item) => {
-      if(item.system.isEquipped?.value) {
+      if (item.system.isEquipped?.value) {
         equipped.push(item);
       }
     });
 
-    const armor = equipped.find((item) => item.type === 'armor');
+    const armor = equipped.find((item) => item.type === "armor");
     const dex = actorData.system.attributes.dex.current;
-    const baseDef = armor ? armor.system.isMartial.value ? armor.system.def.value : armor.system.def.value + dex : dex;
+    const baseDef = armor
+      ? armor.system.isMartial.value
+        ? armor.system.def.value
+        : armor.system.def.value + dex
+      : dex;
 
-    const otherArmors = equipped.filter((item) => item.type === 'shield' || item.type === 'accessory');
+    const otherArmors = equipped.filter(
+      (item) => item.type === "shield" || item.type === "accessory"
+    );
     const otherDef = otherArmors.reduce((def, item) => {
       def += item.system.def.value;
 
       return def;
-    }, 0)
+    }, 0);
     const bonusDef = actorData.system.derived.def.bonus ?? 0;
 
     const def = baseDef + otherDef + bonusDef;
 
-    const nonWeapons = equipped.filter((item) => item.type !== 'weapon');
+    const nonWeapons = equipped.filter((item) => item.type !== "weapon");
     const ins = actorData.system.attributes.ins.current;
     const otherMDef = nonWeapons.reduce((mdef, item) => {
       mdef += item.system.mdef.value;
@@ -83,75 +88,124 @@ export class FabulaUltimaActor extends Actor {
 
   _calculateResources(actorData) {
     const systemData = actorData.system;
-    const classes = actorData.items.filter((item) => item.type === 'class');
-    const classesWithHp = classes.filter((item) => item.system.benefits.hp.value);
-    const classesWithMp = classes.filter((item) => item.system.benefits.mp.value);
-    const classesWithIp = classes.filter((item) => item.system.benefits.ip.value);
-    const hpMultiplier = actorData.type !== 'npc' ? 1 : systemData.isChampion.value !== 1 ? systemData.isChampion.value : systemData.isElite.value ? 2 : 1;
-    const mpMultiplier = actorData.type !== 'npc' ? 1 : systemData.isChampion.value !== 1 ? 2 : 1;
-    const levelVal = actorData.type === 'npc' ? systemData.level.value * 2 : systemData.level.value;
-    systemData.resources.hp.max = ((systemData.attributes.mig.base * 5) + levelVal + (classesWithHp.length * 5) + systemData.resources.hp.bonus) * hpMultiplier;
-    systemData.resources.mp.max = ((systemData.attributes.wlp.base * 5) + systemData.level.value + (classesWithMp.length * 5) + systemData.resources.mp.bonus) * mpMultiplier;
-    if(actorData.type === 'character') {
-      systemData.resources.ip.max = 6 + (classesWithIp.length * 2);
+    const classes = actorData.items.filter((item) => item.type === "class");
+    const classesWithHp = classes.filter(
+      (item) => item.system.benefits.hp.value
+    );
+    const classesWithMp = classes.filter(
+      (item) => item.system.benefits.mp.value
+    );
+    const classesWithIp = classes.filter(
+      (item) => item.system.benefits.ip.value
+    );
+    const hpMultiplier =
+      actorData.type !== "npc"
+        ? 1
+        : systemData.isChampion.value !== 1
+        ? systemData.isChampion.value
+        : systemData.isElite.value
+        ? 2
+        : 1;
+    const mpMultiplier =
+      actorData.type !== "npc" ? 1 : systemData.isChampion.value !== 1 ? 2 : 1;
+    const levelVal =
+      actorData.type === "npc"
+        ? systemData.level.value * 2
+        : systemData.level.value;
+    systemData.resources.hp.max =
+      (systemData.attributes.mig.base * 5 +
+        levelVal +
+        classesWithHp.length * 5 +
+        systemData.resources.hp.bonus) *
+      hpMultiplier;
+    systemData.resources.mp.max =
+      (systemData.attributes.wlp.base * 5 +
+        systemData.level.value +
+        classesWithMp.length * 5 +
+        systemData.resources.mp.bonus) *
+      mpMultiplier;
+    if (actorData.type === "character") {
+      systemData.resources.ip.max = 6 + classesWithIp.length * 2;
     }
   }
 
   _handleStatusEffects(actorData) {
     const systemData = actorData.system;
-    const statVals = [6,8,10,12];
-    let activeStatus = [];
 
-    console.log(systemData);
+    const statMods = {};
 
-    for (let [key, status] of Object.entries(systemData.status)) {
-      if(status.value) {
-        activeStatus = [...activeStatus, ...status.stats];
+    Object.keys(systemData.attributes).forEach(
+      (attrKey) => (statMods[attrKey] = 0)
+    );
+
+    actorData.temporaryEffects.forEach((effect) => {
+      const status = CONFIG.statusEffects.find(
+        (status) => status.id === effect.flags.core.statusId
+      );
+
+      if (status) {
+        console.log(status);
+        status.stats.forEach((attrKey) => (statMods[attrKey] += status.mod));
       }
-    }
+    });
 
     for (let [key, attr] of Object.entries(systemData.attributes)) {
-      const howManyStatus = activeStatus.reduce((acc, curr) => {
-        if(curr == key) {
-          acc++;
-        }
+      let newVal = attr.base + statMods[key];
+      if (newVal > 12) {
+        newVal = 12;
+      }
+      if (newVal < 6) {
+        newVal = 6;
+      }
 
-        return acc;
-      }, 0);
-
-      const index = statVals.findIndex((val) => val == attr.base);
-      const modified = index - howManyStatus;
-      const indexToUse = modified < 0 ? 0 : modified;
-
-      attr.current = statVals[indexToUse];
+      attr.current = newVal;
     }
   }
 
   _calculateInitOrInitMod(actorData) {
-    const equipped = actorData.items.filter((item) => item.system.isEquipped?.value && ['armor', 'shield', 'accessory'].includes(item.type));
+    const equipped = actorData.items.filter(
+      (item) =>
+        item.system.isEquipped?.value &&
+        ["armor", "shield", "accessory"].includes(item.type)
+    );
     const initMod = equipped.reduce((mod, item) => {
       const itemMod = item.system.init?.value ?? 0;
-      return mod += itemMod;
+      return (mod += itemMod);
     }, 0);
     const initBonus = actorData.system.derived.init?.bonus ?? 0;
-    const eliteOrChampBonus = actorData.type !== 'npc' ? 0 : actorData.system.isChampion.value !== 1 ? actorData.system.isChampion.value : actorData.system.isElite.value ? 2 : 0;
+    const eliteOrChampBonus =
+      actorData.type !== "npc"
+        ? 0
+        : actorData.system.isChampion.value !== 1
+        ? actorData.system.isChampion.value
+        : actorData.system.isElite.value
+        ? 2
+        : 0;
 
-    actorData.system.derived.init.value = actorData.type === 'npc' ? initMod + ((actorData.system.attributes.dex.base + actorData.system.attributes.ins.base) / 2) + initBonus + eliteOrChampBonus : initMod + initBonus;
+    actorData.system.derived.init.value =
+      actorData.type === "npc"
+        ? initMod +
+          (actorData.system.attributes.dex.base +
+            actorData.system.attributes.ins.base) /
+            2 +
+          initBonus +
+          eliteOrChampBonus
+        : initMod + initBonus;
   }
 
   /**
    * Prepare Character type specific data
    */
   _prepareCharacterData(actorData) {
-    if (actorData.type !== 'character') return;
+    if (actorData.type !== "character") return;
 
     // Make modifications to data here. For example:
     const systemData = actorData.system;
 
     // Loop through ability scores, and add their modifiers to our sheet output.
     // for (let [key, ability] of Object.entries(systemData.abilities)) {
-      // Calculate the modifier using d20 rules.
-      // ability.mod = Math.floor((ability.value - 10) / 2);
+    // Calculate the modifier using d20 rules.
+    // ability.mod = Math.floor((ability.value - 10) / 2);
     // }
   }
 
@@ -159,7 +213,7 @@ export class FabulaUltimaActor extends Actor {
    * Prepare NPC type specific data.
    */
   _prepareNpcData(actorData) {
-    if (actorData.type !== 'npc') return;
+    if (actorData.type !== "npc") return;
 
     // Make modifications to data here. For example:
     const systemData = actorData.system;
@@ -182,7 +236,7 @@ export class FabulaUltimaActor extends Actor {
    * Prepare character roll data.
    */
   _getCharacterRollData(data) {
-    if (this.type !== 'character') return;
+    if (this.type !== "character") return;
 
     // Copy the ability scores to the top level, so that rolls can use
     // formulas like `@str.mod + 4`.
@@ -202,7 +256,7 @@ export class FabulaUltimaActor extends Actor {
    * Prepare NPC roll data.
    */
   _getNpcRollData(data) {
-    if (this.type !== 'npc') return;
+    if (this.type !== "npc") return;
 
     // Process additional NPC data here.
   }
@@ -211,9 +265,9 @@ export class FabulaUltimaActor extends Actor {
     const changedHP = changed.system?.resources?.hp;
     const currentHP = this.system.resources.hp;
     if (typeof changedHP?.value === "number" && currentHP) {
-        const hpChange = changedHP.value - currentHP.value;
-        const levelChanged = !!changed.system && "level" in changed.system;
-        if (hpChange !== 0 && !levelChanged) options.damageTaken = hpChange * -1;
+      const hpChange = changedHP.value - currentHP.value;
+      const levelChanged = !!changed.system && "level" in changed.system;
+      if (hpChange !== 0 && !levelChanged) options.damageTaken = hpChange * -1;
     }
 
     await super._preUpdate(changed, options, user);
@@ -222,7 +276,9 @@ export class FabulaUltimaActor extends Actor {
   _onUpdate(changed, options, userId) {
     super._onUpdate(changed, options, userId);
 
-    if(options.damageTaken) {
+    console.log(changed);
+
+    if (options.damageTaken) {
       this.showFloatyText(options.damageTaken);
     }
   }
@@ -232,16 +288,16 @@ export class FabulaUltimaActor extends Actor {
 
     const gridSize = canvas.scene.grid.size;
 
-    if(typeof input === 'number') {
+    if (typeof input === "number") {
       scrollingTextArgs = [
-        { x: this.token.x + (gridSize / 2), y: this.token.y + gridSize - 20 },
+        { x: this.token.x + gridSize / 2, y: this.token.y + gridSize - 20 },
         Math.abs(input),
         {
           fill: input < 0 ? "lightgreen" : "white",
           fontSize: 32,
           stroke: 0x000000,
-          strokeThickness: 4
-        }
+          strokeThickness: 4,
+        },
       ];
     }
 

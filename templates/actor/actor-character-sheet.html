@@ -165,19 +165,17 @@
 
         {{!-- For the main features list, span the right two columns --}}
         <section class="main grid-span-2">
-          {{#each system.status as |status key|}}
-          <label class="checkbox">
-            <span>{{ key }}</span
-            ><input
-              type="checkbox"
-              name="system.status.{{key}}.value"
-              {{
-              checked
-              status.value
-              }}
+          <div class="resource flex-group-center">
+            <label for="system.resources.fp.value" class="resource-label"
+              >Fabula Points</label
+            >
+            <input
+              type="text"
+              name="system.resources.fp.value"
+              value="{{system.resources.fp.value}}"
+              data-dtype="Number"
             />
-          </label>
-          {{/each}}
+          </div>
         </section>
       </section>
     </div>

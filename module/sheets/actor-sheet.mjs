@@ -1,13 +1,16 @@
-import {onManageActiveEffect, prepareActiveEffectCategories} from "../helpers/effects.mjs";
+import {
+  onManageActiveEffect,
+  prepareActiveEffectCategories,
+} from "../helpers/effects.mjs";
 
 /* Randomize array in-place using Durstenfeld shuffle algorithm */
 function shuffleArray(array) {
-    for (var i = array.length - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        var temp = array[i];
-        array[i] = array[j];
-        array[j] = temp;
-    }
+  for (var i = array.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var temp = array[i];
+    array[i] = array[j];
+    array[j] = temp;
+  }
 }
 
 /**
@@ -15,7 +18,6 @@ function shuffleArray(array) {
  * @extends {ActorSheet}
  */
 export class FabulaUltimaActorSheet extends ActorSheet {
-
   /** @override */
   static get defaultOptions() {
     return mergeObject(super.defaultOptions, {
@@ -23,7 +25,13 @@ export class FabulaUltimaActorSheet extends ActorSheet {
       template: "systems/fabulaultima/templates/actor/actor-sheet.html",
       width: 600,
       height: 600,
-      tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "features" }]
+      tabs: [
+        {
+          navSelector: ".sheet-tabs",
+          contentSelector: ".sheet-body",
+          initial: "features",
+        },
+      ],
     });
   }
 
@@ -53,11 +61,11 @@ export class FabulaUltimaActorSheet extends ActorSheet {
     this._prepareCharacterData(context);
 
     // Prepare character data and items.
-    if (actorData.type == 'character') {
+    if (actorData.type == "character") {
     }
 
     // Prepare NPC data and items.
-    if (actorData.type == 'npc') {
+    if (actorData.type == "npc") {
     }
 
     // Add roll data for TinyMCE editors.
@@ -101,12 +109,13 @@ export class FabulaUltimaActorSheet extends ActorSheet {
     const spells = [];
     const abilities = [];
     const behaviors = [];
+    const consumables = [];
 
     // Iterate through items, allocating to containers
     for (let i of context.items) {
       i.img = i.img || DEFAULT_TOKEN;
 
-      if(i.system.quality?.value) {
+      if (i.system.quality?.value) {
         i.quality = i.system.quality.value;
       }
 
@@ -119,13 +128,19 @@ export class FabulaUltimaActorSheet extends ActorSheet {
       i.target = i.system.target?.value;
       i.duration = i.system.duration?.value;
 
-      if(['armor', 'shield', 'accessory'].includes(i.type)) {
-        i.def = i.isMartial && i.type === 'armor' ? i.system.def.value : `+${i.system.def.value}`;
+      if (["armor", "shield", "accessory"].includes(i.type)) {
+        i.def =
+          i.isMartial && i.type === "armor"
+            ? i.system.def.value
+            : `+${i.system.def.value}`;
         i.mdef = `+${i.system.mdef.value}`;
-        i.init = i.system.init.value > 0 ? `+${i.system.init.value}` : i.system.init.value;
+        i.init =
+          i.system.init.value > 0
+            ? `+${i.system.init.value}`
+            : i.system.init.value;
       }
 
-      if(i.type === 'weapon') {
+      if (i.type === "weapon") {
         const itemObj = context.actor.items.get(i._id);
         const weapData = itemObj.getWeaponDisplayData();
 
@@ -134,22 +149,24 @@ export class FabulaUltimaActorSheet extends ActorSheet {
         i.damageString = weapData.damageString;
 
         weapons.push(i);
-      } else if (i.type === 'armor') {
+      } else if (i.type === "armor") {
         armor.push(i);
-      } else if (i.type === 'shield') {
+      } else if (i.type === "shield") {
         shields.push(i);
-      } else if (i.type === 'accessory') {
+      } else if (i.type === "accessory") {
         accessories.push(i);
-      } else if (i.type === 'class') {
+      } else if (i.type === "class") {
         classes.push(i);
-      } else if (i.type === 'skill') {
+      } else if (i.type === "skill") {
         skills.push(i);
-      } else if (i.type === 'spell') {
+      } else if (i.type === "spell") {
         spells.push(i);
-      } else if (i.type === 'miscAbility') {
+      } else if (i.type === "miscAbility") {
         abilities.push(i);
-      } else if (i.type === 'behavior') {
+      } else if (i.type === "behavior") {
         behaviors.push(i);
+      } else if (i.type === "consumable") {
+        consumables.push(i);
       }
     }
 
@@ -163,6 +180,7 @@ export class FabulaUltimaActorSheet extends ActorSheet {
     context.spells = spells;
     context.abilities = abilities;
     context.behaviors = behaviors;
+    context.consumables = consumables;
   }
 
   /* -------------------------------------------- */
@@ -172,7 +190,7 @@ export class FabulaUltimaActorSheet extends ActorSheet {
     super.activateListeners(html);
 
     // Render the item sheet for viewing/editing prior to the editable check.
-    html.find('.item-edit').click(ev => {
+    html.find(".item-edit").click((ev) => {
       const li = $(ev.currentTarget).parents(".item");
       const item = this.actor.items.get(li.data("itemId"));
       item.sheet.render(true);
@@ -183,34 +201,38 @@ export class FabulaUltimaActorSheet extends ActorSheet {
     if (!this.isEditable) return;
 
     // Add Inventory Item
-    html.find('.item-create').click(this._onItemCreate.bind(this));
+    html.find(".item-create").click(this._onItemCreate.bind(this));
 
     // Delete Inventory Item
-    html.find('.item-delete').click(ev => {
+    html.find(".item-delete").click((ev) => {
       const li = $(ev.currentTarget).parents(".item");
       const item = this.actor.items.get(li.data("itemId"));
       item.delete();
       li.slideUp(200, () => this.render(false));
     });
 
-    html.find('.item-equip').click(ev => {
+    html.find(".item-equip").click((ev) => {
       const li = $(ev.currentTarget).parents(".item");
       const itemId = li.data("itemId");
       const item = this.actor.items.get(itemId);
       const currentEquipped = item.system.isEquipped.value;
-      this.actor.updateEmbeddedDocuments("Item", [{ _id: itemId, "system.isEquipped.value": !currentEquipped }]);
+      this.actor.updateEmbeddedDocuments("Item", [
+        { _id: itemId, "system.isEquipped.value": !currentEquipped },
+      ]);
     });
 
     // Active Effect management
-    html.find(".effect-control").click(ev => onManageActiveEffect(ev, this.actor));
+    html
+      .find(".effect-control")
+      .click((ev) => onManageActiveEffect(ev, this.actor));
 
     // Rollable abilities.
-    html.find('.rollable').click(this._onRoll.bind(this));
+    html.find(".rollable").click(this._onRoll.bind(this));
 
     // Drag events for macros.
     if (this.actor.isOwner) {
-      let handler = ev => this._onDragStart(ev);
-      html.find('li.item').each((i, li) => {
+      let handler = (ev) => this._onDragStart(ev);
+      html.find("li.item").each((i, li) => {
         if (li.classList.contains("inventory-header")) return;
         li.setAttribute("draggable", true);
         li.addEventListener("dragstart", handler, false);
@@ -236,25 +258,27 @@ export class FabulaUltimaActorSheet extends ActorSheet {
     const itemData = {
       name: name,
       type: type,
-      system: data
+      system: data,
     };
     // Remove the type from the dataset since it's in the itemData.type prop.
     delete itemData.system["type"];
 
     // Finally, create the item!
-    return await Item.create(itemData, {parent: this.actor});
+    return await Item.create(itemData, { parent: this.actor });
   }
 
   _rollBehavior() {
-    const behaviors = this.actor.items.filter((item) => item.type === 'behavior');
+    const behaviors = this.actor.items.filter(
+      (item) => item.type === "behavior"
+    );
     const behaviorMap = [];
 
     behaviors.forEach((behavior) => {
-      for(let i=0;i<behavior.system.weight.value;i++) {
+      for (let i = 0; i < behavior.system.weight.value; i++) {
         behaviorMap.push({
           name: behavior.name,
           desc: behavior.system.description,
-          id: behavior.id
+          id: behavior.id,
         });
       }
     });
@@ -262,16 +286,20 @@ export class FabulaUltimaActorSheet extends ActorSheet {
     const randVal = Math.floor(Math.random() * behaviorMap.length);
     const selected = behaviorMap[randVal];
 
-    const targetArray = [1,2,3,4,5,6];
+    const targetArray = [1, 2, 3, 4, 5, 6];
     shuffleArray(targetArray);
 
-    const content = `<b>Enemy:</b> ${this.actor.name}<br /><b>Selected behavior:</b> ${selected.name}<br /><b>Target priority:</b> ${targetArray.join(' -> ')}`;
+    const content = `<b>Enemy:</b> ${
+      this.actor.name
+    }<br /><b>Selected behavior:</b> ${
+      selected.name
+    }<br /><b>Target priority:</b> ${targetArray.join(" -> ")}`;
 
     let chatData = {
       user: game.user._id,
       speaker: ChatMessage.getSpeaker(),
       whisper: game.user._id,
-      content
+      content,
     };
 
     ChatMessage.create(chatData, {});
@@ -289,28 +317,27 @@ export class FabulaUltimaActorSheet extends ActorSheet {
 
     // Handle item rolls.
     if (dataset.rollType) {
-      if (dataset.rollType == 'item') {
-        const itemId = element.closest('.item').dataset.itemId;
+      if (dataset.rollType == "item") {
+        const itemId = element.closest(".item").dataset.itemId;
         const item = this.actor.items.get(itemId);
         if (item) return item.roll();
       }
 
-      if(dataset.rollType == 'behavior') {
+      if (dataset.rollType == "behavior") {
         return this._rollBehavior();
       }
     }
 
     // Handle rolls that supply the formula directly.
     if (dataset.roll) {
-      let label = dataset.label ? `${dataset.label}` : '';
+      let label = dataset.label ? `${dataset.label}` : "";
       let roll = new Roll(dataset.roll, this.actor.getRollData());
       roll.toMessage({
         speaker: ChatMessage.getSpeaker({ actor: this.actor }),
         flavor: label,
-        rollMode: game.settings.get('core', 'rollMode'),
+        rollMode: game.settings.get("core", "rollMode"),
       });
       return roll;
     }
   }
-
 }

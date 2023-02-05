@@ -44,17 +44,20 @@
           "def": { "value": 0, "bonus": 0 },
           "mdef": { "value": 0, "bonus": 0 }
         },
-        "status": {
-          "slow": { "value": false, "stats": ["dex"] },
-          "dazed": { "value": false, "stats": ["ins"] },
-          "weak": { "value": false, "stats": ["mig"] },
-          "shaken": { "value": false, "stats": ["wlp"] },
-          "enraged": { "value": false, "stats": ["dex", "ins"] },
-          "poisoned": { "value": false, "stats": ["mig", "wlp"] }
-        },
         "castingAttributes": {
           "primary": { "value": "ins" },
           "secondary": { "value": "wlp" }
+        },
+        "resistances": {
+          "phys": { "value": 1 },
+          "air": { "value": 1 },
+          "bolt": { "value": 1 },
+          "dark": { "value": 1 },
+          "earth": { "value": 1 },
+          "fire": { "value": 1 },
+          "ice": { "value": 1 },
+          "light": { "value": 1 },
+          "poison": { "value": 1 }
         }
       }
     },
@@ -65,6 +68,9 @@
           "value": 6,
           "min": 0,
           "max": 6
+        },
+        "fp": {
+          "value": 3
         }
       }
     },
@@ -84,7 +90,8 @@
       "skill",
       "spell",
       "miscAbility",
-      "behavior"
+      "behavior",
+      "consumable"
     ],
     "templates": {
       "base": {
@@ -134,6 +141,9 @@
           "value": 0,
           "type": { "value": "physical" }
         }
+      },
+      "showTitleCard": {
+        "showTitleCard": { "value": false }
       }
     },
     "weapon": {
@@ -172,7 +182,7 @@
       }
     },
     "skill": {
-      "templates": ["base", "hasLevel", "hasClass", "rollInfo"]
+      "templates": ["base", "hasLevel", "hasClass", "rollInfo", "showTitleCard"]
     },
     "spell": {
       "templates": ["base", "hasClass", "rollInfo"],
@@ -182,11 +192,15 @@
       "isOffensive": { "value": false }
     },
     "miscAbility": {
-      "templates": ["base", "rollInfo"]
+      "templates": ["base", "rollInfo", "showTitleCard"]
     },
     "behavior": {
       "templates": ["base"],
       "weight": { "value": 1 }
+    },
+    "consumable": {
+      "templates": ["base"],
+      "ipCost": { "value": 3 }
     }
   }
 }
